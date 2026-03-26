@@ -14,11 +14,13 @@
 	- C, CE, Del 버튼 기능 추가 구현
 	- 사용자 편의기능과 특수기능 추가
 - 수업 중에 배우고 사용했던 클래스들 관련된 설명
-- System.Windows.Forms.Form: 윈도우 창을 띄우고 사용자와 상호작용하는 계산기의 기본 GUI UI 화면을 구성하는 기본 클래스이다.
-- System.Windows.Forms.Button: 숫자, 사칙연산 기호, 결과(=) 등 사용자의 마우스 클릭 입력을 받아 이벤트를 발생시키는 UI 클래스이다.
-- System.Windows.Forms.TextBox: 사용자가 입력한 수식과 컴퓨터가 계산한 결과 데이터를 실시간으로 화면에 출력해 주는 문자열 출력 클래스이다.
-- System.Windows.Forms.KeyEventArgs: 키보드 입력이 발생했을 때 어떤 키가 눌렸는지(e.KeyCode)의 정보를 담아 프로그램에 전달하는 이벤트 데이터 클래스이다.
-- System.Data.DataTable: 괄호가 포함된 복잡한 문자열 수식을 수학 규칙에 맞게 통째로 자동 계산(Compute 메서드)해 주는 연산 지원 클래스이다.
+- System.Windows.Forms.TextBox: 사용자가 키보드로 수식을 입력하거나 계산 결과를 화면에 출력할 때 사용하는 문자열 입력 및 표시용 컨트롤 클래스이다.
+- System.Windows.Forms.Button: 숫자 입력, 연산자 지정, 결과 출력(=) 등 사용자의 클릭 동작을 인식하여 명령을 실행하는 푸시 버튼 컨트롤 클래스이다.
+- System.Windows.Forms.Label: 화면에서 수정되지 않는 고정된 안내 텍스트나 현재 계산 상태의 제목을 보여주기 위해 배치하는 읽기 전용 컨트롤 클래스이다.
+- System.String (속성 및 메서드 연동): 컨트롤의 Text 속성에 들어있는 문자열 데이터를 다루며, 앞뒤 공백을 제거하는 Trim() 등의 메서드를 제공하는 문자열 관리 클래스이다.
+- System.Windows.Forms.Control (Focus 및 Clear 연동): 화면의 포커스를 특정 텍스트박스로 옮겨주는 Focus() 메서드나 내부 값을 초기화하는 Clear() 메서드의 모태가 되는 기본 UI 클래스이다.
+- System.Windows.Forms.KeyEventArgs (이벤트 연동): 사용자가 키보드를 누를 때 발생하는 KeyDown 이벤트에서 어떤 키가 눌렸는지(KeyCode)의 물리적 정보를 담아 전달하는 이벤트 데이터 클래스이다.
+- System.EventArgs (이벤트 연동): 버튼을 마우스로 클릭할 때 발생하는 Click 이벤트의 가장 기본적인 정보와 신호를 담아 처리기로 넘겨주는 이벤트 규격 클래스이다.
 
 - 실습 중에 구현한 기능들 설명
 - 2개의 피연산자의 입력값을 Int로 바꾸어 더하기 계산을 수행하고 그 결과를 저장한다.
