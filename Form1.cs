@@ -1,135 +1,189 @@
 using System;
+using System.Data;
 using System.Windows.Forms;
 
 namespace SimpleCalculator
 {
     public partial class Form1 : Form
     {
-        // 계산에 필요한 전역 변수들
-        private int firstNumber = 0;   // 첫 번째 피연산자
-        private int secondNumber = 0;  // 두 번째 피연산자
-        private string currentOperator = ""; // 현재 연산자 (+, -, X, ÷)
-        private bool isOperatorClicked = false; // 연산자가 클릭되었는지 여부 (새 숫자 입력용)
+        private bool isOperatorClicked = false;
 
         public Form1()
         {
             InitializeComponent();
-            AttachEvents(); // 프로그램 실행 시 버튼과 기능들을 연결합니다.
+            this.KeyPreview = true;
+            this.KeyDown += Form1_KeyDown;
 
-            Dividebtn.Enabled = true; // 디자이너에서 꺼져있던 나누기 버튼 활성화
+            AttachEvents();
         }
 
         // --------------------------------------------------
-        // [1] 숫자 입력 기능 (0 ~ 9 버튼 클릭 시)
+        // [키보드 실시간 입력 제어]
         // --------------------------------------------------
-        private void Number_Click(object sender, EventArgs e)
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            Button btn = sender as Button;
+            if (e.Shift)
+            {
+                if (e.KeyCode == Keys.D9) { AddBracketToTextBox("("); e.SuppressKeyPress = true; e.Handled = true; return; }
+                if (e.KeyCode == Keys.D0) { AddBracketToTextBox(")"); e.SuppressKeyPress = true; e.Handled = true; return; }
+                if (e.KeyCode == Keys.Oemplus) { AppendTextToTextBox("+"); e.SuppressKeyPress = true; e.Handled = true; return; }
+            }
 
-            if (txtBox2.Text == "0" || isOperatorClicked)
+            bool handled = false;
+            string pressedNumber = "";
+
+            if (!e.Shift && e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9)
+            {
+                pressedNumber = (e.KeyCode - Keys.D0).ToString();
+                handled = true;
+            }
+            else if (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9)
+            {
+                pressedNumber = (e.KeyCode - Keys.NumPad0).ToString();
+                handled = true;
+            }
+
+            if (handled)
+            {
+                AppendTextToTextBox(pressedNumber);
+                e.SuppressKeyPress = true;
+                e.Handled = true;
+                return;
+            }
+
+            // ★ 키보드로 곱하기(*)나 나누기(/)를 쳐도 화면에는 'X'와 '÷'로 뜨게 바꿨습니다!
+            if (e.KeyCode == Keys.Add) { AppendTextToTextBox("+"); e.SuppressKeyPress = true; e.Handled = true; }
+            else if (e.KeyCode == Keys.Subtract || e.KeyCode == Keys.OemMinus) { AppendTextToTextBox("-"); e.SuppressKeyPress = true; e.Handled = true; }
+            else if (e.KeyCode == Keys.Multiply) { AppendTextToTextBox("X"); e.SuppressKeyPress = true; e.Handled = true; }
+            else if (e.KeyCode == Keys.Divide || e.KeyCode == Keys.OemQuestion) { AppendTextToTextBox("÷"); e.SuppressKeyPress = true; e.Handled = true; }
+
+            else if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; e.Handled = true; Answerbtn_Click(null, null); }
+            else if (e.KeyCode == Keys.Back) { Delbtn_Click(null, null); e.SuppressKeyPress = true; e.Handled = true; }
+            else if (e.KeyCode == Keys.Escape) { Cbtn_Click(null, null); e.SuppressKeyPress = true; e.Handled = true; }
+            else if (e.KeyCode == Keys.Decimal || e.KeyCode == Keys.OemPeriod) { AppendTextToTextBox("."); e.SuppressKeyPress = true; e.Handled = true; }
+        }
+
+
+        private void AppendTextToTextBox(string text)
+        {
+            if (txtBox2.Text == "0" || txtBox2.Text == "에러" || txtBox2.Text == "0으로 나눌 수 없습니다.")
+                txtBox2.Text = "";
+
+            if (isOperatorClicked)
             {
                 txtBox2.Text = "";
                 isOperatorClicked = false;
             }
 
-            txtBox2.Text += btn.Text;
+            int cursorPosition = txtBox2.SelectionStart;
+            string beforeText = txtBox2.Text.Substring(0, cursorPosition);
+            string afterText = txtBox2.Text.Substring(cursorPosition);
+
+            txtBox2.Text = beforeText + text + afterText;
+            txtBox2.SelectionStart = cursorPosition + text.Length;
+
+            txtBox1.Text = txtBox2.Text;
         }
 
-        // --------------------------------------------------
-        // [2] 사칙연산 기호 입력 기능 (+, -, X, ÷ 버튼 클릭 시)
-        // --------------------------------------------------
+        private void AddBracketToTextBox(string bracket)
+        {
+            if (txtBox2.Text == "0" || txtBox2.Text == "에러" || txtBox2.Text == "0으로 나눌 수 없습니다.")
+                txtBox2.Text = "";
+
+            int cursorPosition = txtBox2.SelectionStart;
+            string beforeText = txtBox2.Text.Substring(0, cursorPosition);
+            string afterText = txtBox2.Text.Substring(cursorPosition);
+
+            txtBox2.Text = beforeText + bracket + afterText;
+            txtBox2.SelectionStart = cursorPosition + 1;
+
+            txtBox1.Text = txtBox2.Text;
+        }
+
+
+        private void Number_Click(object sender, EventArgs e)
+        {
+            Button btn = sender as Button;
+            AppendTextToTextBox(btn.Text);
+        }
+
         private void Operator_Click(object sender, EventArgs e)
         {
             Button btn = sender as Button;
-            currentOperator = btn.Text;
-
-            firstNumber = int.Parse(txtBox2.Text);
-
-            isOperatorClicked = true;
-
-            txtBox1.Text = $"{firstNumber} {currentOperator}";
+            AppendTextToTextBox(btn.Text); // 화면에는 X나 ÷가 그대로 찍힘!
         }
 
+
         // --------------------------------------------------
-        // [3] 계산 결과 출력 기능 (= 버튼 클릭 시)
+        // [★ 마법의 정점] 내부에서만 몰래 컴퓨터 기호로 치환해서 계산
         // --------------------------------------------------
         private void Answerbtn_Click(object sender, EventArgs e)
         {
-            secondNumber = int.Parse(txtBox2.Text);
-            int result = 0;
-
-            switch (currentOperator)
+            try
             {
-                case "+":
-                    result = firstNumber + secondNumber;
-                    break;
-                case "-":
-                    result = firstNumber - secondNumber;
-                    break;
-                case "X":
-                    result = firstNumber * secondNumber;
-                    break;
-                case "÷":
-                    if (secondNumber != 0)
-                    {
-                        result = firstNumber / secondNumber;
-                    }
-                    else
-                    {
-                        MessageBox.Show("0으로 나눌 수 없습니다!", "계산 오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        txtBox2.Text = "0";
-                        return;
-                    }
-                    break;
+                string expression = txtBox2.Text;
+
+                // ★ 화면에 보이는 X와 ÷를 컴퓨터가 읽을 수 있는 *와 /로 치환합니다!
+                expression = expression.Replace("X", "*").Replace("÷", "/");
+
+                DataTable dt = new DataTable();
+                var result = dt.Compute(expression, "");
+
+                txtBox1.Text = txtBox2.Text + " ="; // 상단에는 사람이 보던 'X' 수식 그대로 출력
+                txtBox2.Text = result.ToString();
+
+                isOperatorClicked = true;
             }
-
-            txtBox2.Text = result.ToString();
-            txtBox1.Text = $"{firstNumber} {currentOperator} {secondNumber} = {result}";
-
-            isOperatorClicked = true;
+            catch (DivideByZeroException)
+            {
+                txtBox2.Text = "0으로 나눌 수 없습니다.";
+                isOperatorClicked = true;
+            }
+            catch
+            {
+                txtBox2.Text = "에러";
+                isOperatorClicked = true;
+            }
         }
 
-        // --------------------------------------------------
-        // [4] 수정 및 삭제 기능 (CE, C, del 버튼 클릭 시)
-        // --------------------------------------------------
 
-        // CE 버튼 : 마지막에 입력한 하단 텍스트박스(피연산자) 값만 초기화
         private void CEbtn_Click(object sender, EventArgs e)
         {
             txtBox2.Text = "0";
+            txtBox1.Text = "0";
         }
 
-        // C 버튼 : 메모리 변수와 모든 텍스트박스를 처음 상태로 초기화
         private void Cbtn_Click(object sender, EventArgs e)
         {
             txtBox1.Text = "";
             txtBox2.Text = "0";
-
-            firstNumber = 0;
-            secondNumber = 0;
-            currentOperator = "";
             isOperatorClicked = false;
         }
 
-        // Del 버튼 : 마지막에 입력된 숫자 글자 하나만 제거
         private void Delbtn_Click(object sender, EventArgs e)
         {
-            if (txtBox2.Text.Length > 0)
-            {
-                // 문자열의 마지막 한 글자를 잘라냅니다.
-                txtBox2.Text = txtBox2.Text.Substring(0, txtBox2.Text.Length - 1);
-            }
-
-            // 다 지워져서 공백이 되거나 음수 부호만 남을 시 "0"으로 보정합니다.
-            if (txtBox2.Text == "" || txtBox2.Text == "-")
+            if (txtBox2.Text == "에러" || txtBox2.Text == "0으로 나눌 수 없습니다.")
             {
                 txtBox2.Text = "0";
+                return;
             }
+
+            int cursorPosition = txtBox2.SelectionStart;
+
+            if (cursorPosition > 0 && txtBox2.Text.Length > 0)
+            {
+                string beforeText = txtBox2.Text.Substring(0, cursorPosition - 1);
+                string afterText = txtBox2.Text.Substring(cursorPosition);
+
+                txtBox2.Text = beforeText + afterText;
+                txtBox2.SelectionStart = cursorPosition - 1;
+            }
+
+            if (txtBox2.Text == "") txtBox2.Text = "0";
+            txtBox1.Text = txtBox2.Text;
         }
 
-        // --------------------------------------------------
-        // [5] 디자이너에 생성된 버튼과 실제 코드를 묶어주는 연결 함수
-        // --------------------------------------------------
+
         private void AttachEvents()
         {
             number0.Click += Number_Click;
@@ -150,7 +204,6 @@ namespace SimpleCalculator
 
             Answerbtn.Click += Answerbtn_Click;
 
-            // 수정 및 삭제 이벤트 바인딩
             CEbtn.Click += CEbtn_Click;
             Cbtn.Click += Cbtn_Click;
             Delbtn.Click += Delbtn_Click;

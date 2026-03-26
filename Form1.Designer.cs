@@ -63,22 +63,23 @@
             txtlbl.Size = new Size(712, 80);
             txtlbl.TabIndex = 0;
             txtlbl.Text = "Simple Calculator";
-            
             // 
             // txtBox1
             // 
+            txtBox1.Font = new Font("휴먼모음T", 18F, FontStyle.Bold, GraphicsUnit.Point, 129);
             txtBox1.Location = new Point(141, 162);
             txtBox1.Name = "txtBox1";
-            txtBox1.Size = new Size(510, 31);
+            txtBox1.Size = new Size(510, 49);
             txtBox1.TabIndex = 1;
-            
             // 
             // txtBox2
             // 
-            txtBox2.Location = new Point(141, 210);
+            txtBox2.Font = new Font("휴먼모음T", 18F, FontStyle.Bold, GraphicsUnit.Point, 129);
+            txtBox2.Location = new Point(141, 217);
             txtBox2.Name = "txtBox2";
-            txtBox2.Size = new Size(510, 31);
+            txtBox2.Size = new Size(510, 49);
             txtBox2.TabIndex = 2;
+            
             // 
             // CEbtn
             // 
@@ -220,7 +221,6 @@
             number1.TabIndex = 15;
             number1.Text = "1";
             number1.UseVisualStyleBackColor = true;
-            
             // 
             // number2
             // 
